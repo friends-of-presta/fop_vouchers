@@ -1,0 +1,13 @@
+{shop_url}
+
+Thank you {firstname} {lastname} !
+
+Your order was placed on {shop_name}
+
+Your vouchers details
+
+{txt_vouchers}
+
+[{shop_name}]({shop_url})
+
+Powered by [PrestaShop](https://www.prestashop.com/)

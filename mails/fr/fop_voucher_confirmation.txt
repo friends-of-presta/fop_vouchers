@@ -1,0 +1,13 @@
+{shop_url}
+
+Merci {firstname} {lastname} !
+
+Votre commande a bien été effectuée sur {shop_name}
+
+Détails de vos bons d'achat
+
+{txt_vouchers}
+
+[{shop_name}]({shop_url})
+
+Propulsé par [PrestaShop](https://www.prestashop.com/)
