@@ -295,8 +295,10 @@ class Fop_vouchers extends Module
         $currency = $this->context->currency;
         $vouchers = array();
         foreach ($cart_rules as $cart_rule) {
-            $vouchers[$cart_rule->id] = $cart_rule;
-            $vouchers[$cart_rule->id]->reduction_amount = Tools::displayPrice($cart_rule->reduction_amount, $currency);
+            if($cart_rule->active) {
+                $vouchers[$cart_rule->id] = $cart_rule;
+                $vouchers[$cart_rule->id]->reduction_amount = Tools::displayPrice($cart_rule->reduction_amount, $currency);
+            }
         }
         $this->context->smarty->assign([
             'vouchers' => $vouchers
