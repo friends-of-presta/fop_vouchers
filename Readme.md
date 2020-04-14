@@ -1,6 +1,6 @@
 # FOP - Vouchers
-Ce module vous permettra de configurer des bons de d'achat toujours  
-utilisables même après l'arrêt votre boutique solidaire.
+Ce module vous permettra de configurer des bons d'achat utilisables  
+sur un panier et en physique si vous arrêtezvotre boutique solidaire.
 
 # Comment faire ? :
 -  Créez vos produits bons d'achat
