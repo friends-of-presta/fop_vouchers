@@ -338,14 +338,45 @@ class Fop_vouchers extends Module
                 if (in_array($detail['product_id'], $id_products_coupon)) {
                     switch ($action) {
                         case 'enable':
-                            $now = date('Y-m-d H:i:s');
-                            $to = (!empty($fop_vouchers_data['voucher_duration']) ? $this->translateDuration($fop_vouchers_data['voucher_duration']) : $now);
-                            if ($detail['product_quantity'] > 1) {
-                                $count = 1;
-                                while ($count <= (int)$detail['product_quantity']) {
+                            $cart_rules_already_exists = VouchersModel::getCartRulesIds($order->id_customer,$order->id);
+                            if(empty($cart_rules_already_exists)) {
+                                $now = date('Y-m-d H:i:s');
+                                $to = (!empty($fop_vouchers_data['voucher_duration']) ? $this->translateDuration($fop_vouchers_data['voucher_duration']) : $now);
+                                if ($detail['product_quantity'] > 1) {
+                                    $count = 1;
+                                    while ($count <= (int)$detail['product_quantity']) {
+                                        $cartRule = new CartRule();
+                                        $cartRule->name[$order->id_lang] = $this->l('Fop Voucher') . ' - ' . $detail['product_name'];
+                                        $cartRule->description = implode('_', array('coupon', $id_order, $detail['product_id'], $count)); ## detail coupon
+                                        $cartRule->id_customer = $order->id_customer;
+                                        $cartRule->date_from = $now;
+                                        $cartRule->date_to = $to;
+                                        $cartRule->priority = 1;
+                                        $cartRule->quantity = 1;
+                                        $cartRule->quantity_per_user = 1;
+                                        $cartRule->cart_rule_restriction = 0;
+                                        $cartRule->minimum_amount_currency = 1;
+                                        $cartRule->partial_use = 0;
+                                        $cartRule->code = $this->codeGen();
+                                        $cartRule->reduction_amount = (float)$detail['unit_price_tax_incl'];
+                                        $cartRule->reduction_tax = 1;
+                                        $cartRule->reduction_currency = 1;
+                                        if ($cartRule->add()) {
+                                            $newFopVoucher = new VouchersModel();
+                                            $newFopVoucher->id_order = (int)$id_order;
+                                            $newFopVoucher->id_customer = (int)$order->id_customer;
+                                            $newFopVoucher->id_product = (int)$detail['product_id'];
+                                            $newFopVoucher->id_cart_rule = (int)$cartRule->id;
+                                            $newFopVoucher->add();
+                                        } else {
+                                            PrestaShopLogger::addLog('fop_vouchers Module - error add: ' . $this->l('Fop Voucher') . ' - ' . $detail['product_name'], 1, null, 'CartRule', null, true);
+                                        }
+                                        $count++;
+                                    }
+                                } else {
                                     $cartRule = new CartRule();
                                     $cartRule->name[$order->id_lang] = $this->l('Fop Voucher') . ' - ' . $detail['product_name'];
-                                    $cartRule->description = implode('_', array('coupon', $id_order, $detail['product_id'], $count)); ## detail coupon
+                                    $cartRule->description = implode('_', array('coupon', $id_order, $detail['product_id'])); ## detail coupon
                                     $cartRule->id_customer = $order->id_customer;
                                     $cartRule->date_from = $now;
                                     $cartRule->date_to = $to;
@@ -356,7 +387,7 @@ class Fop_vouchers extends Module
                                     $cartRule->minimum_amount_currency = 1;
                                     $cartRule->partial_use = 0;
                                     $cartRule->code = $this->codeGen();
-                                    $cartRule->reduction_amount = (float)$detail['unit_price_tax_incl'];
+                                    $cartRule->reduction_amount = (float)$detail['total_price_tax_incl'];
                                     $cartRule->reduction_tax = 1;
                                     $cartRule->reduction_currency = 1;
                                     if ($cartRule->add()) {
@@ -369,34 +400,6 @@ class Fop_vouchers extends Module
                                     } else {
                                         PrestaShopLogger::addLog('fop_vouchers Module - error add: ' . $this->l('Fop Voucher') . ' - ' . $detail['product_name'], 1, null, 'CartRule', null, true);
                                     }
-                                    $count++;
-                                }
-                            } else {
-                                $cartRule = new CartRule();
-                                $cartRule->name[$order->id_lang] = $this->l('Fop Voucher') . ' - ' . $detail['product_name'];
-                                $cartRule->description = implode('_', array('coupon', $id_order, $detail['product_id'])); ## detail coupon
-                                $cartRule->id_customer = $order->id_customer;
-                                $cartRule->date_from = $now;
-                                $cartRule->date_to = $to;
-                                $cartRule->priority = 1;
-                                $cartRule->quantity = 1;
-                                $cartRule->quantity_per_user = 1;
-                                $cartRule->cart_rule_restriction = 0;
-                                $cartRule->minimum_amount_currency = 1;
-                                $cartRule->partial_use = 0;
-                                $cartRule->code = $this->codeGen();
-                                $cartRule->reduction_amount = (float)$detail['total_price_tax_incl'];
-                                $cartRule->reduction_tax = 1;
-                                $cartRule->reduction_currency = 1;
-                                if ($cartRule->add()) {
-                                    $newFopVoucher = new VouchersModel();
-                                    $newFopVoucher->id_order = (int)$id_order;
-                                    $newFopVoucher->id_customer = (int)$order->id_customer;
-                                    $newFopVoucher->id_product = (int)$detail['product_id'];
-                                    $newFopVoucher->id_cart_rule = (int)$cartRule->id;
-                                    $newFopVoucher->add();
-                                } else {
-                                    PrestaShopLogger::addLog('fop_vouchers Module - error add: ' . $this->l('Fop Voucher') . ' - ' . $detail['product_name'], 1, null, 'CartRule', null, true);
                                 }
                             }
                             break;
